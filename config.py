@@ -4,7 +4,7 @@ import random
 
 CSV_PATH = "data/metadata_clean.csv"
 IMG_ROOT = "."
-NUM_CLASSES = 62
+NUM_CLASSES = 20
 BATCH_SIZE = 64
 NUM_WORKERS = 4
 NUM_EPOCHS = 10

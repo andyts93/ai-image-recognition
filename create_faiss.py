@@ -32,8 +32,8 @@ if __name__ == "__main__":
             emb = model(img).cpu().numpy()
 
             embeddings.append(emb)
-            part_ids.extend(pids)
-            category_ids.extend(categories)
+            part_ids.extend([str(p.item()) if isinstance(p, torch.Tensor) else str(p) for p in pids])
+            category_ids.extend([int(c.item()) if isinstance(c, torch.Tensor) else int(c) for c in categories])
 
     embeddings = np.vstack(embeddings)
 

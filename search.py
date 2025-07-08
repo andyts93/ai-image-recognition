@@ -40,7 +40,7 @@ def predict_category(img_tensor, cls_model):
         img_tensor = img_tensor.unsqueeze(0).to(DEVICE)
         logits = cls_model(img_tensor)
         predicted = torch.argmax(logits, dim=1).item()
-        return 33
+        return predicted
 
 def extract_embedding(img_tensor, emb_model):
     with torch.no_grad():
