@@ -1,2 +1,4 @@
 image_resized
 models/*
+*__pycache__*
+.DS_Store

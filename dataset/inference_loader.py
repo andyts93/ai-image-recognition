@@ -1,8 +1,6 @@
 import webdataset as wds
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
-import PIL
-import io
 
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
@@ -19,12 +17,20 @@ def parse_class(x):
 def image_transform(img):
     return transform(img)
 
-def get_dataloader(tar_pattern, batch_size, num_workers, shuffle=True):
+def parse_pid(x):
+    return x.decode("utf-8")
+
+def get_inference_dataloader(tar_pattern, batch_size, num_workers, shuffle=True):
+    dataset = wds.WebDataset(tar_pattern, empty_check=False, shardshuffle=False)
+
+    if shuffle:
+        dataset = dataset.shuffle(10000)
+
     dataset = (
-        wds.WebDataset(tar_pattern, resampled=shuffle, shardshuffle=False)
+        dataset
         .decode("pil")
-        .to_tuple("jpg", "cls")
-        .map_tuple(image_transform, parse_class)
+        .to_tuple("jpg", "cls", "pid")
+        .map_tuple(image_transform, parse_class, parse_pid)
     )
 
     return DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)

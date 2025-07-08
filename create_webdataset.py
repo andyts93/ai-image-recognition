@@ -7,17 +7,18 @@ from collections import defaultdict
 from PIL import Image
 from tqdm import tqdm
 import pickle
+import io
 
 CSV_PATH = "data/metadata_clean.csv"
 OUTPUT_DIR = "data/dataset"
-SHARD_SIZE = 100_000
+SHARD_SIZE = 100
 IMAGE_ROOT = "."
 OUTPUT_PATH = "data/dataset/part_id_map.pkl"
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 df = pd.read_csv(CSV_PATH)
-df.dropna(subset=["image_path", "category_id", "part_id"])
+df = df.dropna(subset=["image_path", "category_id", "part_id"])
 df["image_path"] = df["image_path"].apply(lambda p: os.path.join(IMAGE_ROOT, p))
 
 unique_categories = sorted(df["category_id"].unique())
@@ -47,7 +48,9 @@ if __name__ == "__main__":
 
             with Image.open(image_path) as img:
                 img = img.convert("RGB")
-                img_bytes = img.tobytes("jpeg", "RGB")
+                buffer = io.BytesIO()
+                img.save(buffer, format="JPEG")
+                img_bytes = buffer.getvalue()
             
             sample = {
                 "__key__": f"{sample_id:08d}",
