@@ -55,5 +55,6 @@ if __name__ == "__main__":
     train_loader = get_triplet_dataloader(TRAIN_SHARDS, PART_ID_MAP, BATCH_SIZE, NUM_WORKERS)
 
     train_embedding_model(
-        train_loader
+        train_loader,
+        NUM_EPOCHS
     )

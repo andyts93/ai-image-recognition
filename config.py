@@ -4,10 +4,10 @@ import random
 
 CSV_PATH = "data/metadata_clean.csv"
 IMG_ROOT = "."
-NUM_CLASSES = 20
+NUM_CLASSES = 25
 BATCH_SIZE = 64
 NUM_WORKERS = 4
-NUM_EPOCHS = 10
+NUM_EPOCHS = 20
 LEARNING_RATE = 1e-4
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
