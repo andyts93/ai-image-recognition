@@ -23,7 +23,7 @@ def parse_part_id(part_id):
     return part_id.decode('utf-8')
 
 class TripletDataset(Dataset):
-    def __init__(self, tar_pattern, part_id_map_path, min_images_per_part=3):
+    def __init__(self, tar_pattern, part_id_map_path, min_images_per_part=2):
         with open(part_id_map_path, 'rb') as f:
             self.part_id_map = pickle.load(f)
 

@@ -8,7 +8,7 @@ from torch.optim import Adam
 import torch.optim as optim
 
 def evaluate(model):
-    loader = get_dataloader(TRAIN_SHARDS, BATCH_SIZE, NUM_WORKERS, shuffle=False)
+    loader = get_dataloader(VAL_SHARDS, BATCH_SIZE, NUM_WORKERS, shuffle=False)
     model.eval()
     correct = 0
     total = 0
