@@ -4,6 +4,9 @@ import torch.optim as optim
 from tqdm import tqdm
 from model.embedding_model import EmbeddingNet
 from config import *
+import torch.nn.functional as F
+import os
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
 def train_embedding_model(
     train_loader,
@@ -17,6 +20,7 @@ def train_embedding_model(
     model = EmbeddingNet(embedding_dim=embedding_dim).to(DEVICE)
     criterion = nn.TripletMarginLoss(margin=margin, p=2)
     optimizer = optim.Adam(model.parameters(), lr=lr)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=3, factor=0.5)
 
     for epoch in range(1, epochs + 1):
         model.train()
@@ -29,9 +33,9 @@ def train_embedding_model(
             negative = negative.to(DEVICE)
 
             optimizer.zero_grad()
-            anchor_emb = model(anchor)
-            positive_emb = model(positive)
-            negative_emb = model(negative)
+            anchor_emb = F.normalize(model(anchor), p=2, dim=1)
+            positive_emb = F.normalize(model(positive), p=2, dim=1)
+            negative_emb = F.normalize(model(negative), p=2, dim=1)
 
             loss = criterion(anchor_emb, positive_emb, negative_emb)
             loss.backward()
@@ -39,8 +43,10 @@ def train_embedding_model(
 
             epoch_loss += loss.item()
             pbar.set_postfix(loss=epoch_loss / ((pbar.n + 1) * BATCH_SIZE))
+            torch.cuda.empty_cache()
         
         avg_loss = epoch_loss / len(train_loader)
+        scheduler.step(avg_loss)
         print(f"Epoch {epoch} - Avg loss: {avg_loss:.4f}")
 
         torch.save(model.state_dict(), f"{save_path}_epoch{epoch}.pth")

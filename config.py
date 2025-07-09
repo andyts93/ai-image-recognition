@@ -5,7 +5,7 @@ import random
 CSV_PATH = "data/metadata_clean.csv"
 IMG_ROOT = "."
 NUM_CLASSES = 25
-BATCH_SIZE = 64
+BATCH_SIZE = 16
 NUM_WORKERS = 4
 NUM_EPOCHS = 20
 LEARNING_RATE = 1e-4
@@ -24,3 +24,7 @@ PART_ID_MAP = "data/dataset/part_id_map.pkl"
 MODEL_PATH = "models/classifier.pth"
 EMBEDDING_MODEL_PATH = "models/embedding.pth"
 FAISS_INDICES = "faiss_indices"
+
+ALPHA = 0.5
+BETA = 0.3
+GAMMA = 0.2
