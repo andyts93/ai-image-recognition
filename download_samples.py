@@ -7,6 +7,8 @@ from io import BytesIO
 from tqdm import tqdm
 from config import *
 
+SOURCE_IMAGE_FOLDER = "/home/foto_cartellini/"
+
 # === DATABASE CONNECTION ===
 conn = pymysql.connect(
     host=DB_HOST,
