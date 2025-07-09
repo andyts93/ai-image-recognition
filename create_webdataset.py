@@ -9,7 +9,7 @@ from tqdm import tqdm
 import pickle
 import io
 
-CSV_PATH = "data/metadata_clean.csv"
+CSV_PATH = "data/metadata.csv"
 OUTPUT_DIR = "data/dataset"
 SHARD_SIZE = 100
 IMAGE_ROOT = "."

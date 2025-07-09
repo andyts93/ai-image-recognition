@@ -2,11 +2,11 @@ import torch
 import glob
 import random
 
-DB_HOST = "91.187.214.100"
-DB_PORT = 8306
-DB_USER = "root"
-DB_PASS = "marzia69"
-DB_NAME = "corsmagquattro"
+DB_HOST = ""
+DB_PORT = 0
+DB_USER = ""
+DB_PASS = ""
+DB_NAME = ""
 
 CSV_PATH = "data/metadata.csv"
 IMAGE_OUTPUT_FOLDER = "image_resized/"
