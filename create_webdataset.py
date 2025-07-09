@@ -69,7 +69,7 @@ if __name__ == "__main__":
                 sink = start_new_sink(shard_id)
         
         except Exception as e:
-            print(f"Errore su {row["image_path"]}: {repr(e)}")
+            print(f"Errore su {row['image_path']}: {repr(e)}")
             continue
 
     if sink:
