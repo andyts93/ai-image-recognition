@@ -2,7 +2,17 @@ import torch
 import glob
 import random
 
-CSV_PATH = "data/metadata_clean.csv"
+DB_HOST = "91.187.214.100"
+DB_PORT = 8306
+DB_USER = "root"
+DB_PASS = "marzia69"
+DB_NAME = "corsmagquattro"
+
+CSV_PATH = "data/metadata.csv"
+IMAGE_OUTPUT_FOLDER = "image_resized/"
+IMAGE_BASE_URL = "http://91.187.214.100:8380/images/foto/"
+IMAGE_SIZE = (224, 224)
+
 IMG_ROOT = "."
 NUM_CLASSES = 25
 BATCH_SIZE = 8

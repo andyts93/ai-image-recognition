@@ -7,3 +7,5 @@ torchvision
 faiss-cpu
 numpy
 matplotlib
+pymysql
+requests
