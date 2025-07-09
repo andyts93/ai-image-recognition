@@ -36,8 +36,8 @@ def train_model():
 
         pbar = tqdm(dataloader, desc=f"Epoch {epoch+1}/{NUM_EPOCHS}")
         for i, (images, labels) in enumerate(pbar):
-            # if i >= MAX_BATCH_PER_EPOCH:
-            #     break
+            if i >= MAX_BATCH_PER_EPOCH:
+                break
             images, labels = images.to(DEVICE), labels.to(DEVICE)
 
             optimizer.zero_grad()
