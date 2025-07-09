@@ -25,7 +25,7 @@ FROM
         JOIN
     corsmagquattro.ricambi d ON c.ania = d.id 
 WHERE d.id = $arow[id]
-    LIMIT 100";
+    LIMIT 300";
 
     $result = $conn->query($sql);
 
@@ -33,18 +33,30 @@ WHERE d.id = $arow[id]
         $total = $result->num_rows;
         $current = 0;
         while ($row = $result->fetch_assoc()) {
-            if (!file_exists(__DIR__ . '/samples/' . $row['image_path'])) {
+            if (!file_exists(__DIR__ . '/image_resized/' . $row['image_path'])) {
                 $image = @file_get_contents('http://91.187.214.100:8380/images/foto/' . $row['image_path']);
                 if ($image === false) {
-                    echo "Failed to download image: " . $row['image_path'] . "\r";
+                    echo "Failed to download image: " . $row['image_path'] . "\n";
                     continue; 
                 }
-                $filePath = __DIR__ . '/samples/' . $row['image_path'];
+                $filePath = __DIR__ . '/image_resized/' . $row['image_path'];
                 $dirPath = dirname($filePath);
                 if (!is_dir($dirPath)) {
                     mkdir($dirPath, 0777, true);
                 }
-                file_put_contents($filePath, $image);
+
+                $img = imagecreatefromstring($image);
+                if (!$img) {
+                    echo "Failed to resize image: " . $row['image_path'] . "\n";
+                    continue;
+                }
+                $resized = imagecreatetruecolor(224, 224);
+                imagecopyresampled($resized, $img, 0, 0, 0, 0, 224, 224, imagesx($img), imagesy($img));
+                imagedestroy($img);
+
+                imagejpeg($resized, $filePath, 100);
+                imagedestroy($resized);
+                $row['image_path'] = $filePath;
             }
             fputcsv($csv, [$row['image_path'], $row['part_id'], $row['category_id']]);
             $current++;

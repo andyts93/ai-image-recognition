@@ -3,3 +3,8 @@ models/*
 *__pycache__*
 .DS_Store
 faiss_indices/*
+!faiss_indices/.gitkeep
+!models/.gitkeep
+venv
+data/dataset/*
+!data/dataset/.gitkeep
