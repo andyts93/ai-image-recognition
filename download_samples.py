@@ -7,8 +7,6 @@ from io import BytesIO
 from tqdm import tqdm
 from config import *
 
-SOURCE_IMAGE_FOLDER = "/home/foto_cartellini/"
-
 # === DATABASE CONNECTION ===
 conn = pymysql.connect(
     host=DB_HOST,
@@ -64,23 +62,19 @@ if __name__ == "__main__":
                     file_path = os.path.join(IMAGE_OUTPUT_FOLDER, image_path)
 
                     if not os.path.exists(file_path):
-                        source_path = os.path.join(SOURCE_IMAGE_FOLDER, image_path)
-                        if not os.path.exists(source_path):
-                            print(f"Image not found: {source_path}")
+                        # Download
+                        try:
+                            response = requests.get(IMAGE_BASE_URL + image_path, timeout=10)
+                            response.raise_for_status()
+                        except Exception as e:
+                            print(f"Failed to download image: {image_path} - {e}")
                             continue
-                        # # Download
-                        # try:
-                        #     response = requests.get(IMAGE_BASE_URL + image_path, timeout=10)
-                        #     response.raise_for_status()
-                        # except Exception as e:
-                        #     print(f"Failed to download image: {image_path} - {e}")
-                        #     continue
 
                         # Create directories
                         os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
                         try:
-                            img = Image.open(source_path)
+                            img = Image.open(BytesIO(response.content))
                             img = img.convert("RGB")
                             img = img.resize(IMAGE_SIZE)
                             img.save(file_path, format='JPEG', quality=100)
