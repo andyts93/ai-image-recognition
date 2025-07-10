@@ -3,6 +3,9 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 import PIL
 import io
+from torchvision.transforms import ToTensor
+to_tensor = ToTensor()
+import torch
 
 transform = transforms.Compose([
     transforms.RandomResizedCrop(224, scale=(0.8, 1.0)),
@@ -22,6 +25,12 @@ def parse_class(x):
 
 def image_transform(img):
     return transform(img)
+
+def collate_fn_debug(batch):
+    imgs, labels = zip(*batch)
+    imgs = [to_tensor(img) for img in imgs]
+    labels = list(labels)
+    return torch.stack(imgs), torch.tensor(labels)
 
 def get_dataloader(tar_pattern, batch_size, num_workers, shuffle=True):
     if (shuffle):
@@ -45,3 +54,12 @@ def get_dataloader(tar_pattern, batch_size, num_workers, shuffle=True):
         dataset.shuffle(1000)
 
     return DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
+
+def get_debug_dataloader(tar_pattern, batch_size, num_workers):
+    dataset = (
+        wds.WebDataset(tar_pattern, resampled=False, empty_check=False)
+        .decode("pil")
+        .to_tuple("jpg", "cls")
+    )
+
+    return DataLoader(dataset, batch_size=batch_size, num_workers=num_workers, collate_fn=collate_fn_debug)  

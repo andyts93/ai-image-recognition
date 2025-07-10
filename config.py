@@ -1,6 +1,5 @@
 import torch
 import glob
-import random
 
 DB_HOST = ""
 DB_PORT = 8306
@@ -23,12 +22,8 @@ NUM_EPOCHS = 20
 LEARNING_RATE = 1e-4
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-ALL_SHARDS = sorted(glob.glob("data/dataset/shard-*.tar"))
-random.seed(42)
-random.shuffle(ALL_SHARDS)
-split_index = int(0.8 * len(ALL_SHARDS))
-TRAIN_SHARDS = ALL_SHARDS[:split_index]
-VAL_SHARDS = ALL_SHARDS[split_index:]
+TRAIN_SHARDS = sorted(glob.glob("data/dataset/train/shard-*.tar"))
+VAL_SHARDS = sorted(glob.glob("data/dataset/val/shard-*.tar"))
 TOTAL_SAMPLES = 6495
 MAX_BATCH_PER_EPOCH = TOTAL_SAMPLES // BATCH_SIZE
 

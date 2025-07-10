@@ -48,6 +48,23 @@ if __name__ == "__main__":
                     JOIN cors_optimized.component c ON b.idmag = c.idmag AND b.idver = c.idver
                     JOIN corsmagquattro.ricambi d ON c.ania = d.id
                     WHERE d.id = {arow['id']}
+                    UNION
+                        SELECT 
+                            REPLACE(REPLACE(path,
+                                    'images/foto/',
+                                    ''),
+                                '-',
+                                '/') AS image_path,
+                            c.idmag AS part_id,
+                            c.ania AS category_id
+                        FROM
+                            cors_optimized.component_image a
+                                JOIN
+                            cors_optimized.component c ON a.idmag = c.idmag
+                                JOIN
+                            corsmagquattro.ricambi d ON c.ania = d.id
+                        WHERE
+                            d.id = {arow['id']}
                     LIMIT 300
                 """
                 cursor.execute(query)
