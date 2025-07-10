@@ -5,7 +5,6 @@ import PIL
 import io
 from torchvision.transforms import ToTensor
 to_tensor = ToTensor()
-import torch
 
 transform = transforms.Compose([
     transforms.RandomResizedCrop(224, scale=(0.8, 1.0)),
@@ -49,9 +48,6 @@ def get_dataloader(tar_pattern, batch_size, num_workers, shuffle=True):
         .to_tuple("jpg", "cls")
         .map_tuple(image_transform, parse_class)
     )
-
-    if (shuffle):
-        dataset.shuffle(1000)
 
     return DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
 

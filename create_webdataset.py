@@ -9,6 +9,7 @@ import pickle
 import io
 import random
 from collections import Counter
+from sklearn.utils import resample
 
 CSV_PATH = "data/metadata.csv"
 OUTPUT_DIR = "data/dataset"
@@ -23,6 +24,22 @@ os.makedirs(os.path.join(OUTPUT_DIR, "val"), exist_ok=True)
 df = pd.read_csv(CSV_PATH)
 df = df.dropna(subset=["image_path", "category_id", "part_id"])
 df["image_path"] = df["image_path"].apply(lambda p: os.path.join(IMAGE_ROOT, p))
+
+counts = df["category_id"].value_counts()
+max_count = counts.max()
+
+df_list = [df[df["category_id"] == cid] for cid in counts.index]
+
+df_oversampled = []
+for subset in df_list:
+    n = len(subset)
+    if n < max_count:
+        df_up = resample(subset, replace=True, n_samples=max_count, random_state=42)
+        df_oversampled.append(df_up)
+    else:
+        df_oversampled.append(subset)
+
+df = pd.concat(df_oversampled).reset_index(drop=True)
 
 unique_categories = sorted(df["category_id"].unique())
 cat2idx = {str(cid): idx for idx, cid in enumerate(unique_categories)}
@@ -70,7 +87,7 @@ def write_shards(part_ids, output_subdir):
                 sample = {
                     "__key__": f"{sample_id:08d}",
                     "jpg": img_bytes,
-                    "cls": str(cls_index).encode("utf-8"),
+                    "cls": int(cls_index),
                     "pid": str(part_id).encode("utf-8"),
                 }
 
