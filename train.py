@@ -39,7 +39,7 @@ def train_model():
         running_loss, total = 0.0, 0
 
         pbar = tqdm(dataloader, desc=f"Epoch {epoch+1}/{NUM_EPOCHS}")
-        for images, labels in enumerate(pbar):
+        for images, labels in pbar:
             images, labels = images.to(DEVICE), labels.to(DEVICE)
 
             optimizer.zero_grad()
