@@ -22,8 +22,8 @@ def evaluate(model):
             correct += (preds == labels).sum().item()
     if total == 0:
         print("Warning: Empty dataloader.")
-        print("Sample preds:", preds[:5].cpu().numpy())
-        print("Sample labels:", labels[:5].cpu().numpy())
+    print("Sample preds:", preds[:5].cpu().numpy())
+    print("Sample labels:", labels[:5].cpu().numpy())
     return correct / total
 
 def train_model():
