@@ -2,11 +2,11 @@ import torch
 import glob
 import random
 
-DB_HOST = "91.187.214.100"
+DB_HOST = ""
 DB_PORT = 8306
-DB_USER = "root"
-DB_PASS = "marzia69"
-DB_NAME = "corsmagquattro"
+DB_USER = ""
+DB_PASS = ""
+DB_NAME = ""
 
 CSV_PATH = "data/metadata.csv"
 TEST_CSV_PATH = "data/test.csv"
