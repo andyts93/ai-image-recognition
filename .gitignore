@@ -8,3 +8,4 @@ faiss_indices/*
 venv
 data/dataset/*
 !data/dataset/.gitkeep
+image_test

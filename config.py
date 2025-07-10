@@ -2,14 +2,16 @@ import torch
 import glob
 import random
 
-DB_HOST = ""
-DB_PORT = 0
-DB_USER = ""
-DB_PASS = ""
-DB_NAME = ""
+DB_HOST = "91.187.214.100"
+DB_PORT = 8306
+DB_USER = "root"
+DB_PASS = "marzia69"
+DB_NAME = "corsmagquattro"
 
 CSV_PATH = "data/metadata.csv"
+TEST_CSV_PATH = "data/test.csv"
 IMAGE_OUTPUT_FOLDER = "image_resized/"
+IMAGE_TEST_OUTPUT_FOLDER = "image_test/"
 IMAGE_BASE_URL = "http://91.187.214.100:8380/images/foto/"
 IMAGE_SIZE = (224, 224)
 
@@ -27,7 +29,8 @@ random.shuffle(ALL_SHARDS)
 split_index = int(0.8 * len(ALL_SHARDS))
 TRAIN_SHARDS = ALL_SHARDS[:split_index]
 VAL_SHARDS = ALL_SHARDS[split_index:]
-MAX_BATCH_PER_EPOCH = 503 / BATCH_SIZE
+TOTAL_SAMPLES = 6495
+MAX_BATCH_PER_EPOCH = TOTAL_SAMPLES // BATCH_SIZE
 
 PART_ID_MAP = "data/dataset/part_id_map.pkl"
 

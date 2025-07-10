@@ -91,10 +91,9 @@ def main(img_path, embedding_path, classifier_path, num_classes):
     emb_model, cls_model = load_models(embedding_path, classifier_path, num_classes)
 
     category_id = predict_category(img_tensor, cls_model)
-    print(f"Categoria predetta {category_id}")
 
     embedding = extract_embedding(img_tensor, emb_model)
-    print(query_faiss(embedding, category_id))
+    return category_id, query_faiss(embedding, category_id)
     # results, distances = query_faiss(embedding, category_id)
 
     # print("\nRisultati trovati")

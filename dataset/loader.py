@@ -29,8 +29,13 @@ def get_dataloader(tar_pattern, batch_size, num_workers, shuffle=True):
     else:
         shardshuffle = False
 
+    webds = wds.WebDataset(tar_pattern, resampled=False, shardshuffle=shardshuffle, empty_check=False)
+
+    if (shuffle):
+        webds.shuffle(1000)
+
     dataset = (
-        wds.WebDataset(tar_pattern, resampled=False, shardshuffle=shardshuffle, empty_check=False)
+        webds
         .decode("pil")
         .to_tuple("jpg", "cls")
         .map_tuple(image_transform, parse_class)

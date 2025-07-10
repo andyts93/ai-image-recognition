@@ -9,3 +9,5 @@ numpy
 matplotlib
 pymysql
 requests
+gradio
+transformers
