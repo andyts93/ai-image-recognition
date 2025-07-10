@@ -6,8 +6,6 @@ from model.classifier import get_model
 import torch.nn as nn
 from torch.optim import Adam
 import torch.optim as optim
-from transformers import get_cosine_schedule_with_warmup
-import json
 
 def evaluate(model):
     loader = get_dataloader(VAL_SHARDS, BATCH_SIZE, NUM_WORKERS, shuffle=False)
@@ -26,23 +24,10 @@ def evaluate(model):
 
 def train_model():
     dataloader = get_dataloader(TRAIN_SHARDS, BATCH_SIZE, NUM_WORKERS)
-    
     model = get_model(NUM_CLASSES).to(DEVICE)
     optimizer = Adam(model.parameters(), lr=LEARNING_RATE)
-
-    with open("data/dataset/train_class_counts.json") as f:
-        class_counts = json.load(f)
-    
-    counts_tensor = torch.tensor([class_counts.get(str(i), 0) for i in range(NUM_CLASSES)], dtype=torch.float)
-    weights = 1.0 / counts_tensor
-    weights = weights / weights.sum() * len(class_counts)
-
-    criterion = nn.CrossEntropyLoss(weight=weights.to(DEVICE))
-
-    num_training_steps = MAX_BATCH_PER_EPOCH * NUM_EPOCHS
-    scheduler = get_cosine_schedule_with_warmup(optimizer, num_warmup_steps=500, num_training_steps=num_training_steps)
-    # scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=2, factor=0.5, mode='max')
-
+    criterion = nn.CrossEntropyLoss()
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=2, factor=0.5, mode='max')
     best_val_acc = 0.0
 
     for epoch in range(NUM_EPOCHS):
@@ -76,6 +61,8 @@ def train_model():
 
     print("Training complete!")
     print(f"Best Validation Accuracy: {best_val_acc:.4f}")
+
+    
 
 if __name__ == "__main__":
     train_model()
