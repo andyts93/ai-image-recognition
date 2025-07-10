@@ -11,4 +11,4 @@ pymysql
 requests
 gradio
 transformers
-sklearn
+scikit-learn
