@@ -28,9 +28,9 @@ def get_dataloader(tar_pattern, batch_size, num_workers, shuffle=True):
         shardshuffle = 100
     else:
         shardshuffle = False
-        
+
     dataset = (
-        wds.WebDataset(tar_pattern, resampled=False, shardshuffle=shardshuffle)
+        wds.WebDataset(tar_pattern, resampled=False, shardshuffle=shardshuffle, empty_check=False)
         .decode("pil")
         .to_tuple("jpg", "cls")
         .map_tuple(image_transform, parse_class)
