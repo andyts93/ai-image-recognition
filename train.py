@@ -20,6 +20,10 @@ def evaluate(model):
             _, preds = torch.max(outputs, 1)
             total += labels.size(0)
             correct += (preds == labels).sum().item()
+    if total == 0:
+        print("Warning: Empty dataloader.")
+        print("Sample preds:", preds[:5].cpu().numpy())
+        print("Sample labels:", labels[:5].cpu().numpy())
     return correct / total
 
 def train_model():
@@ -35,9 +39,7 @@ def train_model():
         running_loss, total = 0.0, 0
 
         pbar = tqdm(dataloader, desc=f"Epoch {epoch+1}/{NUM_EPOCHS}")
-        for i, (images, labels) in enumerate(pbar):
-            if i >= MAX_BATCH_PER_EPOCH:
-                break
+        for images, labels in enumerate(pbar):
             images, labels = images.to(DEVICE), labels.to(DEVICE)
 
             optimizer.zero_grad()

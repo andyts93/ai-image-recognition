@@ -11,7 +11,7 @@ import io
 
 CSV_PATH = "data/metadata.csv"
 OUTPUT_DIR = "data/dataset"
-SHARD_SIZE = 100
+SHARD_SIZE = 1_000
 IMAGE_ROOT = "."
 OUTPUT_PATH = "data/dataset/part_id_map.pkl"
 
