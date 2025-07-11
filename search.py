@@ -8,6 +8,7 @@ import os
 import argparse
 from config import *
 from collections import defaultdict
+import torch.nn.functional as F
 
 from model.embedding_model import EmbeddingNet
 from model.classifier import get_model
@@ -36,13 +37,21 @@ def load_models(embedding_path, classifier_path, num_classes):
 
     return emb_model, cls_model
 
-def predict_category(img_tensor, cls_model):
+def predict_category(img_tensor, cls_model, k=3):
     with torch.no_grad():
         img_tensor = img_tensor.unsqueeze(0).to(DEVICE)
         logits = cls_model(img_tensor)
-        predicted = torch.argmax(logits, dim=1).item()
-        return predicted
-
+        
+        probs = F.softmax(logits, dim=1)
+        topk_probs, topk_indices = torch.topk(probs, k=k, dim=1)
+        
+        # Converte in lista di tuple: (classe, probabilità)
+        results = [
+            (topk_indices[0][i].item(), topk_probs[0][i].item())
+            for i in range(k)
+        ]
+        return results
+        
 def extract_embedding(img_tensor, emb_model):
     with torch.no_grad():
         img_tensor = img_tensor.unsqueeze(0).to(DEVICE)
@@ -90,15 +99,40 @@ def main(img_path, embedding_path, classifier_path, num_classes):
 
     emb_model, cls_model = load_models(embedding_path, classifier_path, num_classes)
 
-    category_id = predict_category(img_tensor, cls_model)
-
     embedding = extract_embedding(img_tensor, emb_model)
-    return category_id, query_faiss(embedding, category_id)
-    # results, distances = query_faiss(embedding, category_id)
 
-    # print("\nRisultati trovati")
-    # for i, (res, dist) in enumerate(zip(results, distances)):
-    #     print(f"{i+1}. Part ID: {res['part_id']}, Distance: {dist:.4f}")
+    categories = predict_category(img_tensor, cls_model)
+    dist_by_cat = defaultdict(list)
+    all_results = []
+
+    for cat_id, prob in categories:
+        results = query_faiss(embedding, cat_id)
+        for part_id, distance in results:
+            dist = float(distance)
+            all_results.append((cat_id, part_id, dist))
+            dist_by_cat[cat_id].append(dist)
+
+    # Calcola media distanza per categoria
+    avg_dist_by_cat = {
+        cat_id: sum(dists) / len(dists)
+        for cat_id, dists in dist_by_cat.items()
+    }
+
+    # Ordina: prima per media distanza della categoria, poi per distanza del part_id
+    sorted_results = sorted(
+        all_results,
+        key=lambda x: (avg_dist_by_cat[x[0]], x[2])  # x = (cat_id, part_id, dist)
+    )
+
+    # Prendi solo il primo part_id per ogni categoria
+    seen_categories = set()
+    top_results = []
+    for cat_id, part_id, dist in sorted_results:
+        if cat_id not in seen_categories:
+            top_results.append((cat_id, part_id, dist))
+            seen_categories.add(cat_id)
+
+    return top_results
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -106,4 +140,4 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
 
-    main(args.image_path, EMBEDDING_MODEL_PATH, MODEL_PATH, NUM_CLASSES)
+    print(main(args.image_path, EMBEDDING_MODEL_PATH, MODEL_PATH, NUM_CLASSES))

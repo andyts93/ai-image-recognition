@@ -15,9 +15,11 @@ def get_category(idx):
 df = pd.read_csv(TEST_CSV_PATH)
 index = {'value': 0}
 dataset_df = pd.read_csv(CSV_PATH)
+dataset_df['part_id'] = dataset_df['part_id'].astype(str)
 
 def get_images_by_part_id(part_id):
-    group = dataset_df[dataset_df['part_id'] == int(part_id)]
+    part_id = str(part_id)
+    group = dataset_df[dataset_df['part_id'] == part_id]
     return group['image_path'].tolist()
 
 def show_next():
@@ -26,44 +28,36 @@ def show_next():
 
     row = df.iloc[index['value']]
     image_path, part_id, category_id = row
+    similar_images = []
 
-    category, result = main(image_path, EMBEDDING_MODEL_PATH, MODEL_PATH, NUM_CLASSES)
-    category_pred = get_category(category)
+    results = main(image_path, EMBEDDING_MODEL_PATH, MODEL_PATH, NUM_CLASSES)
+    info = f"<b>📄 File:</b> {image_path}<br><br><br>"
+    for cat_id, part_id, score in results:
+        category_pred = get_category(cat_id)
 
-    # INFO testo
-    info = f"<b>📄 File:</b> {image_path}<br>"
-    info += f"<b>🆔 Part ID:</b> {part_id}<br>"
-    info += f"<b>✅ Categoria Predetta:</b> {category_pred} ({category})<br>"
-    info += f"<b>🎯 Categoria Corretta:</b> {category_id}<br><br>"
-    info += "<b>🔍 Top risultati:</b><br>"
-    for ids, score in result:
-        info += f" - ID: {ids}, Score: {score:.4f}<br>"
+        # INFO testo
+        info += f"<b>🆔 Part ID:</b> {part_id}<br>"
+        info += f"<b>🔮 Categoria Predetta:</b> {category_pred} ({cat_id})<br>"
+        info += f"<b>🎯 Categoria Corretta:</b> {category_id}<br>"
+        if int(category_pred) == int(category_id):
+            info += f"<b>CORRETTA</b><br>"
+        info += f"<b>Score</b>: {score:.4f}<br><br>"
 
-    # Esito
-    if int(category_pred) == int(category_id):
-        verdict = "<div style='color:green; font-size: 20px;'>✅ Categoria corretta!</div>"
-    else:
-        verdict = "<div style='color:red; font-size: 20px;'>❌ Categoria sbagliata!</div>"
+        paths = get_images_by_part_id(part_id)
+        for p in paths:
+            try:
+                img = Image.open(p)
+                similar_images.append((img, f"P: {part_id}|C:{category_pred}"))
+            except:
+                continue
 
     try:
         image = Image.open(image_path)
     except Exception as e:
         return None, f"<div style='color:red;'>Errore: {e}</div>", "", [], ""
 
-    # Recupera immagini simili
-    similar_images = []
-    if result:
-        top_part_id = result[0][0]
-        paths = get_images_by_part_id(top_part_id)
-        for p in paths:
-            try:
-                img = Image.open(p)
-                similar_images.append(img)
-            except:
-                continue
-
-    index['value'] += 1
-    return image, verdict, info, similar_images, f"{index['value']} / {len(df)}"
+    index['value'] += 10
+    return image, info, similar_images, f"{index['value']} / {len(df)}"
 
 if __name__ == "__main__":
     with gr.Blocks() as demo:
@@ -73,10 +67,9 @@ if __name__ == "__main__":
             image_output = gr.Image(label="🖼️ Immagine in esame")
             
             with gr.Column():
-                verdict_output = gr.HTML(label="Esito")
                 info_output = gr.HTML(label="📋 Informazioni dettagliate")
 
-                gallery_output = gr.Gallery(label="🔁 Immagini simili dal DB", columns=(4,), height="auto")
+                gallery_output = gr.Gallery(label="🔁 Immagini simili dal DB", columns=(4,), height="auto", show_label=True)
 
         with gr.Column():
             count_output = gr.Textbox(label="Progresso", interactive=False)
@@ -85,7 +78,6 @@ if __name__ == "__main__":
 
         next_button.click(fn=show_next, outputs=[
             image_output,
-            verdict_output,
             info_output,
             gallery_output,
             count_output

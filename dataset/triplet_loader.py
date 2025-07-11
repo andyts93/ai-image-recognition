@@ -32,6 +32,15 @@ class TripletDataset(Dataset):
         }
         self.valid_part_ids = list(self.part_id_map.keys())
 
+        # Costruisci cls → [part_id, part_id, ...]
+        self.cls_to_part_ids = defaultdict(list)
+        self.part_id_to_cls = {}
+
+        for part_id, entries in self.part_id_map.items():
+            cls = entries[0][1]  # prendi la classe dal primo elemento
+            self.cls_to_part_ids[cls].append(part_id)
+            self.part_id_to_cls[part_id] = cls
+
         self.dataset = (
             wds.WebDataset(tar_pattern, handler=wds.ignore_and_continue, empty_check=False, shardshuffle=False)
             .decode('pil')
@@ -55,10 +64,19 @@ class TripletDataset(Dataset):
             [img for img, pid in self.samples if pid == anchor_part], 2
         )
 
-        negative_part = random.choice([p for p in self.valid_part_ids if p != anchor_part])
-        negative_img = random.choice(
-            [img for img, pid in self.samples if pid == negative_part]
-        )
+        # Negativo: diverso part_id ma stessa classe
+        candidate_neg_parts = [
+            pid for pid in self.cls_to_part_ids[anchor_cls] if pid != anchor_part
+        ]
+
+        if candidate_neg_parts:
+            negative_part = random.choice(candidate_neg_parts)
+        else:
+            # fallback: diverso part_id, qualsiasi classe
+            negative_part = random.choice([pid for pid in self.valid_part_ids if pid != anchor_part])
+
+        negative_imgs = [img for img, pid in self.samples if pid == negative_part]
+        negative_img = random.choice(negative_imgs)
 
         return anchor_img, positive_img, negative_img
 
