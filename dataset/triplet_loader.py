@@ -3,6 +3,7 @@ import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
 import random
 import pickle
+from collections import defaultdict
 
 transform = transforms.Compose([
     transforms.RandomResizedCrop(224),
