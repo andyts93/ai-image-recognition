@@ -59,7 +59,7 @@ class TripletDataset(Dataset):
     
     def __getitem__(self, idx):
         anchor_part = self.valid_part_ids[idx]
-        anchor_keys = self.part_id_map[anchor_part]
+        anchor_cls = self.part_id_to_cls[anchor_part]
 
         anchor_img, positive_img = random.sample(
             [img for img, pid in self.samples if pid == anchor_part], 2
