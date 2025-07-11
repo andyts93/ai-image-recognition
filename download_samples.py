@@ -31,7 +31,7 @@ if __name__ == "__main__":
                 SELECT id 
                 FROM corsmagquattro.ricambi 
                 WHERE visible = 1 AND id > 0 
-                LIMIT 25
+                LIMIT 50
             """)
             ids = cursor.fetchall()
 

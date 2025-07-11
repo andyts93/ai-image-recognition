@@ -1,11 +1,15 @@
 import torch
 import glob
+from dotenv import load_dotenv
+import os
 
-DB_HOST = ""
-DB_PORT = 8306
-DB_USER = ""
-DB_PASS = ""
-DB_NAME = ""
+load_dotenv()
+
+DB_HOST = os.getenv('DB_HOST')
+DB_PORT = int(os.getenv('DB_PORT'))
+DB_USER = os.getenv('DB_USER')
+DB_PASS = os.getenv('DB_PASS')
+DB_NAME = os.getenv('DB_NAME')
 
 CSV_PATH = "data/metadata.csv"
 TEST_CSV_PATH = "data/test.csv"
@@ -15,7 +19,7 @@ IMAGE_BASE_URL = "http://91.187.214.100:8380/images/foto/"
 IMAGE_SIZE = (224, 224)
 
 IMG_ROOT = "."
-NUM_CLASSES = 25
+NUM_CLASSES = 50
 BATCH_SIZE = 8
 NUM_WORKERS = 4
 NUM_EPOCHS = 20
@@ -24,7 +28,7 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 TRAIN_SHARDS = sorted(glob.glob("data/dataset/train/shard-*.tar"))
 VAL_SHARDS = sorted(glob.glob("data/dataset/val/shard-*.tar"))
-TOTAL_SAMPLES = 6495
+TOTAL_SAMPLES = 15_000
 MAX_BATCH_PER_EPOCH = TOTAL_SAMPLES // BATCH_SIZE
 
 PART_ID_MAP = "data/dataset/part_id_map.pkl"

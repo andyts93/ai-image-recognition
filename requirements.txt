@@ -12,3 +12,4 @@ requests
 gradio
 transformers
 scikit-learn
+python-dotenv
