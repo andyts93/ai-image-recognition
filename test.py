@@ -56,7 +56,7 @@ def show_next():
     except Exception as e:
         return None, f"<div style='color:red;'>Errore: {e}</div>", "", [], ""
 
-    index['value'] += 10
+    index['value'] += 1
     return image, info, similar_images, f"{index['value']} / {len(df)}"
 
 if __name__ == "__main__":

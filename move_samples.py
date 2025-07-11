@@ -1,9 +1,7 @@
 import os
 import csv
 import pymysql
-import requests
 from PIL import Image
-from io import BytesIO
 from tqdm import tqdm
 from config import *
 
@@ -16,6 +14,8 @@ conn = pymysql.connect(
     database=DB_NAME,
     cursorclass=pymysql.cursors.DictCursor
 )
+
+SOURCE_IMAGE_FOLDER = "/mnt/foto_cartellini"
 
 if __name__ == "__main__":
     # === CSV WRITER ===
@@ -50,21 +50,13 @@ if __name__ == "__main__":
                     WHERE d.id = {arow['id']}
                     UNION
                         SELECT 
-                            REPLACE(REPLACE(path,
-                                    'images/foto/',
-                                    ''),
-                                '-',
-                                '/') AS image_path,
+                            REPLACE(REPLACE(path, 'images/foto/', ''), '-', '/') AS image_path,
                             c.idmag AS part_id,
                             c.ania AS category_id
-                        FROM
-                            cors_optimized.component_image a
-                                JOIN
-                            cors_optimized.component c ON a.idmag = c.idmag
-                                JOIN
-                            corsmagquattro.ricambi d ON c.ania = d.id
-                        WHERE
-                            d.id = {arow['id']}
+                        FROM cors_optimized.component_image a
+                        JOIN cors_optimized.component c ON a.idmag = c.idmag
+                        JOIN corsmagquattro.ricambi d ON c.ania = d.id
+                        WHERE d.id = {arow['id']}
                 """
                 cursor.execute(query)
                 rows = cursor.fetchall()
@@ -73,33 +65,26 @@ if __name__ == "__main__":
                     print("No results found.")
                     continue
 
-                for i, row in enumerate(tqdm(rows, desc=f"ID {arow['id']}", unit="img")):
-                    image_path = row['image_path']
-                    file_path = os.path.join(IMAGE_OUTPUT_FOLDER, image_path)
+                for row in tqdm(rows, desc=f"ID {arow['id']}", unit="img"):
+                    relative_image_path = row['image_path']
+                    source_path = os.path.join(SOURCE_IMAGE_FOLDER, relative_image_path)
+                    target_path = os.path.join(IMAGE_OUTPUT_FOLDER, relative_image_path)
 
-                    if not os.path.exists(file_path):
-                        # Download
-                        try:
-                            response = requests.get(IMAGE_BASE_URL + image_path, timeout=10)
-                            response.raise_for_status()
-                        except Exception as e:
-                            print(f"Failed to download image: {image_path} - {e}")
-                            continue
+                    if not os.path.exists(source_path):
+                        print(f"Image not found: {source_path}")
+                        continue
 
-                        # Create directories
-                        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
-                        try:
-                            img = Image.open(BytesIO(response.content))
+                    try:
+                        os.makedirs(os.path.dirname(target_path), exist_ok=True)
+                        with Image.open(source_path) as img:
                             img = img.convert("RGB")
                             img = img.resize(IMAGE_SIZE)
-                            img.save(file_path, format='JPEG', quality=100)
-                        except Exception as e:
-                            print(f"Failed to resize image: {image_path} - {e}")
-                            continue
+                            img.save(target_path, format='JPEG', quality=100)
+                    except Exception as e:
+                        print(f"Error processing image {source_path}: {e}")
+                        continue
 
-                    # Save row
-                    writer.writerow([file_path, row['part_id'], row['category_id']])
+                    writer.writerow([target_path, row['part_id'], row['category_id']])
 
                 print(f"Ania {arow['id']} scritto.")
 

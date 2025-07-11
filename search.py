@@ -117,10 +117,6 @@ def main(img_path, embedding_path, classifier_path, num_classes):
                 all_results.append((cat_id, part_id, dist))
                 dist_by_cat[cat_id].append(dist)
 
-    print(categories, all_results)
-
-    print(all_results)
-
     # Calcola media distanza per categoria
     avg_dist_by_cat = {
         cat_id: weighted_avg(dists)
