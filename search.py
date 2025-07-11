@@ -91,7 +91,11 @@ def query_faiss(embedding, category_id):
     # Ordina per score crescente
     scored_part_ids.sort(key=lambda x: x[1])
 
-    return scored_part_ids[:5]
+    return scored_part_ids[:3]
+
+def weighted_avg(dists):
+    weights = 1 / (np.arange(1, len(dists)+1))  # [1, 0.5, 0.33, ...]
+    return np.average(sorted(dists), weights=weights[:len(dists)])
 
 def main(img_path, embedding_path, classifier_path, num_classes):
     img = Image.open(img_path).convert("RGB")
@@ -112,9 +116,11 @@ def main(img_path, embedding_path, classifier_path, num_classes):
             all_results.append((cat_id, part_id, dist))
             dist_by_cat[cat_id].append(dist)
 
+    print(all_results)
+
     # Calcola media distanza per categoria
     avg_dist_by_cat = {
-        cat_id: sum(dists) / len(dists)
+        cat_id: weighted_avg(dists)
         for cat_id, dists in dist_by_cat.items()
     }
 
