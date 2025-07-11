@@ -57,6 +57,7 @@ if __name__ == "__main__":
                         JOIN cors_optimized.component c ON a.idmag = c.idmag
                         JOIN corsmagquattro.ricambi d ON c.ania = d.id
                         WHERE d.id = {arow['id']}
+                    LIMIT 1000
                 """
                 cursor.execute(query)
                 rows = cursor.fetchall()
