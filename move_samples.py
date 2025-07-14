@@ -75,15 +75,16 @@ if __name__ == "__main__":
                         print(f"Image not found: {source_path}")
                         continue
 
-                    try:
-                        os.makedirs(os.path.dirname(target_path), exist_ok=True)
-                        with Image.open(source_path) as img:
-                            img = img.convert("RGB")
-                            img = img.resize(IMAGE_SIZE)
-                            img.save(target_path, format='JPEG', quality=100)
-                    except Exception as e:
-                        print(f"Error processing image {source_path}: {e}")
-                        continue
+                    if not os.path.exists(target_path):
+                        try:
+                            os.makedirs(os.path.dirname(target_path), exist_ok=True)
+                            with Image.open(source_path) as img:
+                                img = img.convert("RGB")
+                                img = img.resize(IMAGE_SIZE)
+                                img.save(target_path, format='JPEG', quality=100)
+                        except Exception as e:
+                            print(f"Error processing image {source_path}: {e}")
+                            continue
 
                     writer.writerow([target_path, row['part_id'], row['category_id']])
 
