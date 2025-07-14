@@ -4,7 +4,7 @@ from config import *
 from dataset.loader import get_dataloader, get_val_dataloader
 from model.classifier import get_model
 import torch.nn as nn
-from torch.optim import Adam
+from torch.optim import Adam, AdamW
 import torch.optim as optim
 import os
 
@@ -52,9 +52,11 @@ def train_model():
         param.requires_grad = True
         
     # L'optimizer riceve solo i parametri che abbiamo scongelato
-    optimizer = Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=LEARNING_RATE)
+    # optimizer = Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=LEARNING_RATE)
+    optimizer = AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=LEARNING_RATE) 
     # Lo scheduler monitorerà l'accuratezza per regolare il learning rate
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=2, factor=0.5, mode='max')
+    # scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=2, factor=0.5, mode='max')
+    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=FROZEN_EPOCHS) 
 
     for epoch in range(FROZEN_EPOCHS):
         model.train()
@@ -74,7 +76,8 @@ def train_model():
 
         val_acc = evaluate(model, val_loader)
         tqdm.write(f"FASE 1 - Epoch {epoch+1} Loss: {running_loss/num_batches:.4f} | Acc: {val_acc:.4f}")
-        scheduler.step(val_acc)
+        # scheduler.step(val_acc)
+        scheduler.step()
 
         if val_acc > best_val_acc:
             best_val_acc = val_acc
@@ -92,8 +95,10 @@ def train_model():
         param.requires_grad = True
     
     # Crea un nuovo optimizer con un learning rate più basso per tutti i parametri
-    optimizer = Adam(model.parameters(), lr=LEARNING_RATE / UNFROZEN_LR_FACTOR)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=2, factor=0.5, mode='max')
+    # optimizer = Adam(model.parameters(), lr=LEARNING_RATE / UNFROZEN_LR_FACTOR)
+    # scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=2, factor=0.5, mode='max')
+    optimizer = AdamW(filter(model.parameters(), lr=LEARNING_RATE / UNFROZEN_LR_FACTOR))
+    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=NUM_EPOCHS) 
 
     # Continua il training per le restanti epoche
     for epoch in range(NUM_EPOCHS): # NUM_EPOCHS ora definisce le epoche solo per questa fase
@@ -114,7 +119,8 @@ def train_model():
 
         val_acc = evaluate(model, val_loader)
         tqdm.write(f"FASE 2 - Epoch {epoch+1} Loss: {running_loss/num_batches:.4f} | Acc: {val_acc:.4f}")
-        scheduler.step(val_acc)
+        # scheduler.step(val_acc)
+        scheduler.step()
         
         if val_acc > best_val_acc:
             best_val_acc = val_acc
