@@ -112,7 +112,7 @@ def train_embedding_model(epochs=10, lr=1e-4, embedding_dim=128, margin=0.5, dev
         # 4. Salva il modello se le performance di validazione sono migliorate
         if val_recall_at_5 > best_val_recall:
             best_val_recall = val_recall_at_5
-            save_path = os.path.join(MODELS_DIR, "best_embedding_model.pth")
+            save_path = os.path.join("models/", "best_embedding_model.pth")
             torch.save(model.state_dict(), save_path)
             tqdm.write(f"🚀 Nuovo modello migliore salvato in {save_path} con Recall@5: {best_val_recall:.4f}")
 
