@@ -35,7 +35,7 @@ def parse_pid(pid_bytes):
 def get_part_dataloader(tar_pattern, batch_size, num_workers):
     """ Dataloader per il training con data augmentation. """
     dataset = (
-        wds.WebDataset(tar_pattern, resampled=True, shardshuffle=1000)
+        wds.WebDataset(tar_pattern, resampled=False, shardshuffle=1000)
         .shuffle(1000)
         .decode("pil")
         .to_tuple("jpg", "pid")
