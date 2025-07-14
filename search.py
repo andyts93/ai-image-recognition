@@ -58,7 +58,7 @@ def extract_embedding(img_tensor, emb_model):
         embedding = emb_model(img_tensor).cpu().numpy()
         return embedding.astype("float32")
 
-def query_faiss(embedding, category_id):
+def query_faiss(embedding, category_id, faiss_k, alpha, beta, gamma):
     index_path = f"{FAISS_INDICES}/index_{category_id}.index"
     meta_path = f"{FAISS_INDICES}/metadata_{category_id}.npy"
 
@@ -68,7 +68,7 @@ def query_faiss(embedding, category_id):
     index = faiss.read_index(index_path)
     metadata = np.load(meta_path, allow_pickle=True)
 
-    D, I = index.search(embedding, k=50)
+    D, I = index.search(embedding, k=faiss_k)
     results = [metadata[i] for i in I[0]]
     distances = D[0]
     
@@ -85,7 +85,7 @@ def query_faiss(embedding, category_id):
         min_d = dists.min()
         var_d = dists.var()
 
-        score = ALPHA * mean_d + BETA * min_d + GAMMA * var_d
+        score = alpha * mean_d + beta * min_d + gamma * var_d
         scored_part_ids.append((part_id, score))
 
     # Ordina per score crescente
@@ -97,7 +97,7 @@ def weighted_avg(dists):
     weights = 1 / (np.arange(1, len(dists)+1))  # [1, 0.5, 0.33, ...]
     return np.average(sorted(dists), weights=weights[:len(dists)])
 
-def main(img_path, embedding_path, classifier_path, num_classes):
+def main(img_path, embedding_path, classifier_path, num_classes, params):
     img = Image.open(img_path).convert("RGB")
     img_tensor = transform(img)
 
@@ -110,8 +110,12 @@ def main(img_path, embedding_path, classifier_path, num_classes):
     all_results = []
 
     for cat_id, prob in categories:
-        if prob > 0.1:
-            results = query_faiss(embedding, cat_id)
+        if prob > params['prob_threshold']:
+            results = query_faiss(embedding, cat_id, 
+                                faiss_k=params['faiss_k'], 
+                                alpha=params['alpha'], 
+                                beta=params['beta'], 
+                                gamma=params['gamma'])
             for part_id, distance in results:
                 dist = float(distance)
                 all_results.append((cat_id, part_id, dist))
