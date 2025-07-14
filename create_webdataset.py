@@ -83,8 +83,6 @@ for cat, pids in cat_to_partids.items():
     if in_train == 0 or in_val == 0:
         print(f"⚠️ Category {cat} non presente in entrambi i set: train={in_train}, val={in_val}")
 
-sys.exit(1)
-
 def write_shards(part_ids, output_subdir):
     shard_id = 0
     sample_id = 0
