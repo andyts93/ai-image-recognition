@@ -1,14 +1,14 @@
 import torch
 from tqdm import tqdm
 from config import *
-from dataset.loader import get_dataloader
+from dataset.loader import get_dataloader, get_val_dataloader
 from model.classifier import get_model
 import torch.nn as nn
 from torch.optim import Adam
 import torch.optim as optim
 
 def evaluate(model):
-    loader = get_dataloader(VAL_SHARDS, BATCH_SIZE, NUM_WORKERS, shuffle=False)
+    loader = get_val_dataloader(VAL_SHARDS, BATCH_SIZE, NUM_WORKERS)
     model.eval()
     correct = 0
     total = 0

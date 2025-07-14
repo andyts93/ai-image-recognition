@@ -6,7 +6,7 @@ import io
 from torchvision.transforms import ToTensor
 to_tensor = ToTensor()
 
-transform = transforms.Compose([
+train_transform = transforms.Compose([
     transforms.RandomResizedCrop(224, scale=(0.8, 1.0)),
     transforms.RandomHorizontalFlip(),
     transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),
@@ -19,11 +19,24 @@ transform = transforms.Compose([
     )
 ])
 
+val_transform = transforms.Compose([
+    transforms.Resize(256),
+    transforms.CenterCrop(224), # Usa un ritaglio deterministico
+    transforms.ToTensor(),
+    transforms.Normalize(
+        mean=[0.485, 0.456, 0.406],
+        std=[0.229, 0.224, 0.225]
+    )
+])
+
 def parse_class(x):
     return int(x)
 
 def image_transform(img):
-    return transform(img)
+    return train_transform(img)
+
+def image_transform_val(img):
+    return val_transform(img)
 
 def collate_fn_debug(batch):
     imgs, labels = zip(*batch)
@@ -47,6 +60,16 @@ def get_dataloader(tar_pattern, batch_size, num_workers, shuffle=True):
         .decode("pil")
         .to_tuple("jpg", "cls")
         .map_tuple(image_transform, parse_class)
+    )
+
+    return DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
+
+def get_val_dataloader(tar_pattern, batch_size, num_workers):
+    dataset = (
+        wds.WebDataset(tar_pattern, resampled=False, shardshuffle=False, empty_check=False)
+        .decode("pil")
+        .to_tuple("jps", "cls")
+        .map_tuple(image_transform_val, parse_class)
     )
 
     return DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
