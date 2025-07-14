@@ -33,8 +33,8 @@ def run_search_with_params(img_tensor, emb_model, cls_model, params):
 if __name__ == "__main__":
     # 1. DEFINISCI LA GRIGLIA DI IPERPARAMETRI
     param_grid = {
-        'top_k_classifier': [1, 3],
-        'prob_threshold': [0.05, 0.1],
+        'top_k_classifier': [3, 5],
+        'prob_threshold': [0.1, 0.2],
         'faiss_k': [30, 50],
         'alpha': [1.0, 0.5], # Peso per la distanza media
         'beta': [1.0, 0.5],  # Peso per la distanza minima

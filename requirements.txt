@@ -13,3 +13,4 @@ gradio
 transformers
 scikit-learn
 python-dotenv
+optuna

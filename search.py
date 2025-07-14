@@ -105,7 +105,8 @@ def main(img_path, embedding_path, classifier_path, num_classes, params):
 
     embedding = extract_embedding(img_tensor, emb_model)
 
-    categories = predict_category(img_tensor, cls_model)
+    categories = predict_category(img_tensor, cls_model, k=params["top_k_classifier"])
+    print(categories)
     dist_by_cat = defaultdict(list)
     all_results = []
 
@@ -127,19 +128,17 @@ def main(img_path, embedding_path, classifier_path, num_classes, params):
         for cat_id, dists in dist_by_cat.items()
     }
 
+    prob_by_cat = {cat_id: prob for cat_id, prob in categories}
+
     # Ordina: prima per media distanza della categoria, poi per distanza del part_id
     sorted_results = sorted(
         all_results,
-        key=lambda x: (avg_dist_by_cat[x[0]], x[2])  # x = (cat_id, part_id, dist)
+        key=lambda x: (avg_dist_by_cat[x[0]] / prob_by_cat[x[0]], x[2])   # x = (cat_id, part_id, dist)
     )
 
-    # Prendi solo il primo part_id per ogni categoria
-    seen_categories = set()
-    top_results = []
-    for cat_id, part_id, dist in sorted_results:
-        if cat_id not in seen_categories:
-            top_results.append((cat_id, part_id, dist))
-            seen_categories.add(cat_id)
+    top_results = [
+        (part_id, dist, cat_id) for cat_id, part_id, dist in sorted_results
+    ]
 
     return top_results
 

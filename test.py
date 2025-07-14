@@ -30,9 +30,19 @@ def show_next():
     image_path, part_id, category_id = row
     similar_images = []
 
-    results = main(image_path, EMBEDDING_MODEL_PATH, MODEL_PATH, NUM_CLASSES)
-    info = f"<b>📄 File:</b> {image_path}<br><br><br>"
-    for cat_id, part_id, score in results:
+    params = {
+        'top_k_classifier': 5,
+        'prob_threshold': 0.1,
+        'faiss_k': 50,
+        'alpha': 0.5, # Peso per la distanza media
+        'beta': 1.0,  # Peso per la distanza minima
+        'gamma': 0.0  # Peso per la varianza della distanza
+    }
+    results = main(image_path, EMBEDDING_MODEL_PATH, MODEL_PATH, NUM_CLASSES, params)
+    print(results)
+    info = f"<b>📄 File:</b> {image_path}<br>"
+    info += f"<b>Part ID:</b> {part_id}<br><br><br>"
+    for part_id, score, cat_id in results:
         category_pred = get_category(cat_id)
 
         # INFO testo
