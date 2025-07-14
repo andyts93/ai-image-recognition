@@ -30,61 +30,87 @@ def evaluate(model, val_loader):
             correct += (preds == labels).sum().item()
     return correct / total
 
-# --- NUOVA FUNZIONE "OBJECTIVE" PER OPTUNA ---
+# --- La logica di training è ora dentro la funzione "objective" per Optuna ---
 def objective(trial):
     """
-    Questa funzione esegue un ciclo di addestramento completo e restituisce 
-    lo score che Optuna cercherà di massimizzare.
+    Questa funzione esegue un ciclo di addestramento completo (entrambe le fasi)
+    e restituisce lo score (val_acc) che Optuna cercherà di massimizzare.
     """
-    # 1. Definisci lo spazio di ricerca degli iperparametri
-    learning_rate = trial.suggest_float("lr", 1e-5, 1e-3, log=True)
+    # 1. Definisci gli iperparametri che Optuna deve ottimizzare
+    # Learning rate per la prima fase
+    lr_frozen = trial.suggest_float("lr_frozen", 1e-4, 1e-2, log=True)
+    # Fattore di riduzione per la seconda fase
+    unfrozen_lr_factor = trial.suggest_categorical("unfrozen_lr_factor", [5.0, 10.0, 20.0, 50.0])
+    # Weight decay per l'ottimizzatore AdamW
     weight_decay = trial.suggest_float("weight_decay", 1e-4, 1e-1, log=True)
-    
+
     # Carica dataloader e modello
     train_loader = get_dataloader(TRAIN_SHARDS, BATCH_SIZE, NUM_WORKERS)
     val_loader = get_val_dataloader(VAL_SHARDS, BATCH_SIZE, NUM_WORKERS)
     model = get_model(NUM_CLASSES).to(DEVICE)
-
-    # Usa i parametri suggeriti da Optuna
-    optimizer = optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
-    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=NUM_EPOCHS)
     criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
-    
     best_val_acc = 0.0
 
-    print(f"\n--- Inizio Trial #{trial.number} con lr={learning_rate:.6f}, wd={weight_decay:.6f} ---")
+    # -----------------------------------------------------
+    # FASE 1: Addestramento del solo classificatore
+    # -----------------------------------------------------
+    print(f"\n--- Inizio Trial #{trial.number} | FASE 1 ---")
     
-    # Ciclo di training (puoi anche ridurre NUM_EPOCHS qui per fare trial più veloci)
-    for epoch in range(NUM_EPOCHS):
+    for param in model.parameters():
+        param.requires_grad = False
+    for param in model.classifier.parameters():
+        param.requires_grad = True
+    
+    # Usa gli iperparametri suggeriti dal trial
+    optimizer = AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=lr_frozen, weight_decay=weight_decay)
+    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=FROZEN_EPOCHS)
+
+    for epoch in range(FROZEN_EPOCHS):
         model.train()
-        running_loss, num_batches = 0.0, 0
-        
-        # Usiamo 'disable=True' in tqdm per non inondare il log durante i trial
-        pbar = tqdm(train_loader, desc=f"Trial {trial.number} Epoch {epoch+1}", disable=True) 
-        for images, labels in pbar:
+        for images, labels in train_loader:
             images, labels = images.to(DEVICE), labels.to(DEVICE)
             optimizer.zero_grad()
             outputs = model(images)
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
-            running_loss += loss.item()
-            num_batches += 1
-        
         scheduler.step()
 
-        # Valutazione
-        val_acc = evaluate(model, val_loader)
+    # -----------------------------------------------------
+    # FASE 2: Fine-tuning di tutto il modello
+    # -----------------------------------------------------
+    print(f"--- Trial #{trial.number} | FASE 2 ---")
+    
+    for param in model.parameters():
+        param.requires_grad = True
+    
+    # Crea un nuovo optimizer con il learning rate ridotto per la fase 2
+    optimizer = AdamW(model.parameters(), lr=lr_frozen / unfrozen_lr_factor, weight_decay=weight_decay)
+    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=NUM_EPOCHS)
+
+    # Continua il training per le restanti epoche
+    for epoch in range(NUM_EPOCHS):
+        model.train()
+        for images, labels in train_loader:
+            images, labels = images.to(DEVICE), labels.to(DEVICE)
+            optimizer.zero_grad()
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+        scheduler.step()
         
+        # Valuta alla fine di ogni epoca della fase 2
+        val_acc = evaluate(model, val_loader)
         if val_acc > best_val_acc:
             best_val_acc = val_acc
             
-        # Optuna può interrompere i trial che non sembrano promettenti (pruning)
+        # Comunica a Optuna il risultato intermedio e controlla se il trial va interrotto
         trial.report(val_acc, epoch)
         if trial.should_prune():
             raise optuna.exceptions.TrialPruned()
 
-    # 2. Restituisci il valore che Optuna deve massimizzare
+    # 2. Restituisci il valore finale che Optuna deve massimizzare
     return best_val_acc
 
 def study_model():
