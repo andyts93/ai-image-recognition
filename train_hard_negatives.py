@@ -79,6 +79,7 @@ def train_embedding_model(epochs=10, lr=1e-4, embedding_dim=128, margin=0.5, dev
     for epoch in range(1, epochs + 1):
         model.train() # Imposta il modello in modalità training
         epoch_loss = 0.0
+        num_batches = 0
 
         pbar = tqdm(train_loader, desc=f"Epoch {epoch}/{epochs}")
         for images, pids in pbar:
@@ -91,9 +92,14 @@ def train_embedding_model(epochs=10, lr=1e-4, embedding_dim=128, margin=0.5, dev
                 loss.backward()
                 optimizer.step()
             epoch_loss += loss.item()
+
+            num_batches += 1
             pbar.set_postfix(loss=loss.item())
 
-        avg_loss = epoch_loss / len(train_loader)
+        if num_batches > 0:
+            avg_loss = epoch_loss / num_batches
+        else:
+            avg_loss = 0.0
         
         # 3. Esegui la valutazione alla fine di ogni epoca
         val_recall_at_5 = evaluate(model, val_loader, device, k=5)
