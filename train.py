@@ -114,12 +114,28 @@ def objective(trial):
     return best_val_acc
 
 def study_model():
-    # 3. Crea e lancia lo "studio" di Optuna
-    # La direction è "maximize" perché vogliamo massimizzare l'accuratezza
+    # --- MODIFICHE PER LA BARRA DI AVANZAMENTO ---
+    N_TRIALS = 20  # Definisci il numero di prove qui
+
+    # La funzione callback che aggiornerà la barra dopo ogni trial
+    def callback(study, trial):
+        pbar.update(1)
+
+    # Inizializza la barra di avanzamento di tqdm
+    pbar = tqdm(total=N_TRIALS, desc="Ottimizzazione Parametri")
+    # ----------------------------------------------
+
+    # Crea e lancia lo "studio" di Optuna
     study = optuna.create_study(direction="maximize")
     
-    # Avvia l'ottimizzazione. Optuna chiamerà la funzione 'objective' 20 volte.
-    study.optimize(objective, n_trials=20) 
+    try:
+        # Aggiungi il 'callback' alla chiamata optimize
+        study.optimize(objective, n_trials=N_TRIALS, callbacks=[callback])
+    except KeyboardInterrupt:
+        print("Ottimizzazione interrotta manualmente.")
+    finally:
+        # Assicurati di chiudere la barra di avanzamento alla fine
+        pbar.close()
     
     # Stampa i risultati finali
     print("\n--- Ottimizzazione Completata ---")
