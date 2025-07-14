@@ -97,7 +97,7 @@ def train_model():
     # Crea un nuovo optimizer con un learning rate più basso per tutti i parametri
     # optimizer = Adam(model.parameters(), lr=LEARNING_RATE / UNFROZEN_LR_FACTOR)
     # scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=2, factor=0.5, mode='max')
-    optimizer = AdamW(model.parameters(), lr=LEARNING_RATE / UNFROZEN_LR_FACTOR))
+    optimizer = AdamW(model.parameters(), lr=LEARNING_RATE / UNFROZEN_LR_FACTOR)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=NUM_EPOCHS) 
 
     # Continua il training per le restanti epoche
