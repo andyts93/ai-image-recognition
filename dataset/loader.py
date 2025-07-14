@@ -68,7 +68,7 @@ def get_val_dataloader(tar_pattern, batch_size, num_workers):
     dataset = (
         wds.WebDataset(tar_pattern, resampled=False, shardshuffle=False, empty_check=False)
         .decode("pil")
-        .to_tuple("jps", "cls")
+        .to_tuple("jpg", "cls")
         .map_tuple(image_transform_val, parse_class)
     )
 
