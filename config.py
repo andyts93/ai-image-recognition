@@ -25,6 +25,9 @@ NUM_WORKERS = 4
 NUM_EPOCHS = 20
 LEARNING_RATE = 1e-4
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+CLASS_LEARNING_RATE = 0.001215 
+CLASS_UNFROZEN_LR_FACTOR = 20.0
+CLASS_WEIGHT_DECAY = 0.001092
 
 TRAIN_SHARDS = sorted(glob.glob("data/dataset/train/shard-*.tar"))
 VAL_SHARDS = sorted(glob.glob("data/dataset/val/shard-*.tar"))

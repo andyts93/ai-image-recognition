@@ -13,8 +13,6 @@ import argparse
 # --- NUOVE IMPOSTAZIONI PER IL FINE-TUNING ---
 # Numero di epoche per cui addestrare solo il classificatore (con il resto del modello congelato)
 FROZEN_EPOCHS = 5 
-# Fattore di riduzione del learning rate per la seconda fase di fine-tuning
-UNFROZEN_LR_FACTOR = 10.0
 
 def evaluate(model, val_loader):
     model.eval()
@@ -168,7 +166,7 @@ def train_model():
         
     # L'optimizer riceve solo i parametri che abbiamo scongelato
     # optimizer = Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=LEARNING_RATE)
-    optimizer = AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=LEARNING_RATE) 
+    optimizer = AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=CLASS_LEARNING_RATE, weight_decay=CLASS_WEIGHT_DECAY) 
     # Lo scheduler monitorerà l'accuratezza per regolare il learning rate
     # scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=2, factor=0.5, mode='max')
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=FROZEN_EPOCHS) 
@@ -212,7 +210,7 @@ def train_model():
     # Crea un nuovo optimizer con un learning rate più basso per tutti i parametri
     # optimizer = Adam(model.parameters(), lr=LEARNING_RATE / UNFROZEN_LR_FACTOR)
     # scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=2, factor=0.5, mode='max')
-    optimizer = AdamW(model.parameters(), lr=LEARNING_RATE / UNFROZEN_LR_FACTOR)
+    optimizer = AdamW(model.parameters(), lr=CLASS_LEARNING_RATE / CLASS_UNFROZEN_LR_FACTOR, weight_decay=CLASS_WEIGHT_DECAY)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=NUM_EPOCHS) 
 
     # Continua il training per le restanti epoche
