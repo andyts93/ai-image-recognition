@@ -9,10 +9,23 @@ import torch.optim as optim
 import os
 import optuna
 import argparse
+import random
+import numpy as np
 
 # --- NUOVE IMPOSTAZIONI PER IL FINE-TUNING ---
 # Numero di epoche per cui addestrare solo il classificatore (con il resto del modello congelato)
-FROZEN_EPOCHS = 5 
+FROZEN_EPOCHS = 5
+
+def set_seeds(seed_value=42):
+    random.seed(seed_value)
+    np.random.seed(seed_value)
+    torch.manual_seed(seed_value)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed_value)
+        torch.cuda.manual_seed_all(seed_value)
+        # Questo può rallentare l'addestramento, ma aumenta la riproducibilità
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
 
 def evaluate(model, val_loader):
     model.eval()
@@ -245,13 +258,13 @@ def train_model():
     print(f"Miglior Validation Accuracy ottenuta: {best_val_acc:.4f}")
 
 if __name__ == "__main__":
-    train_model()
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument("action", help="'study' or 'train''")
+    set_seeds()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("action", help="'study' or 'train''")
     
-    # args = parser.parse_args()
+    args = parser.parse_args()
 
-    # if args.action == 'study':
-    #     study_model()
-    # elif args.action == 'train':
-    #     train_model()
+    if args.action == 'study':
+        study_model()
+    elif args.action == 'train':
+        train_model()
