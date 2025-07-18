@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     # Usa un dataloader senza shuffling e senza augmentation per questo processo
     # Assicurati che il tuo get_val_dataloader restituisca (immagini, etichette)
-    dataloader = get_val_dataloader(TRAIN_SHARDS, BATCH_SIZE, NUM_WORKERS)
+    dataloader = get_val_dataloader(TRAIN_SHARDS, BATCH_SIZE, NUM_WORKERS, shuffle=False)
     
     # Esegui il calcolo
     category_centroids = calculate_all_centroids(emb_model, dataloader, DEVICE)
