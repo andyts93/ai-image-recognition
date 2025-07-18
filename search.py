@@ -97,8 +97,9 @@ def weighted_avg(dists):
     weights = 1 / (np.arange(1, len(dists)+1))  # [1, 0.5, 0.33, ...]
     return np.average(sorted(dists), weights=weights[:len(dists)])
 
-def main(img_path, embedding_path, classifier_path, num_classes, params):
-    img = Image.open(img_path).convert("RGB")
+def main(img, embedding_path, classifier_path, num_classes, params):
+    if not isinstance(img, Image.Image):
+        img = Image.open(img).convert("RGB")
     img_tensor = transform(img)
 
     emb_model, cls_model = load_models(embedding_path, classifier_path, num_classes)
@@ -107,6 +108,7 @@ def main(img_path, embedding_path, classifier_path, num_classes, params):
 
     categories = predict_category(img_tensor, cls_model, k=params["top_k_classifier"])
     print(categories)
+
     dist_by_cat = defaultdict(list)
     all_results = []
 
@@ -130,14 +132,33 @@ def main(img_path, embedding_path, classifier_path, num_classes, params):
 
     prob_by_cat = {cat_id: prob for cat_id, prob in categories}
 
-    # Ordina: prima per media distanza della categoria, poi per distanza del part_id
+    # 1. Crea una lista arricchita con lo score globale calcolato per ogni risultato
+    results_with_scores = []
+    for cat_id, part_id, part_score in all_results:
+        # Prende lo score medio della categoria e la sua probabilità
+        category_avg_score = avg_dist_by_cat.get(cat_id, float('inf'))
+        category_prob = prob_by_cat.get(cat_id, 1e-9) # Usa un valore piccolo per evitare divisione per zero
+
+        # Calcola lo score globale, che è la metrica primaria per l'ordinamento
+        global_score = category_avg_score / category_prob
+        
+        results_with_scores.append({
+            'part_id': part_id,
+            'global_score': global_score,
+            'cat_id': cat_id,
+            'part_score': part_score # Manteniamo lo score parziale per l'ordinamento secondario
+        })
+
+    # 2. Ordina la lista usando gli score pre-calcolati
     sorted_results = sorted(
-        all_results,
-        key=lambda x: (avg_dist_by_cat[x[0]] / prob_by_cat[x[0]], x[2])   # x = (cat_id, part_id, dist)
+        results_with_scores,
+        key=lambda x: (x['global_score'], x['part_score'])
     )
 
+    # 3. Crea l'output finale usando lo score globale ("global_score")
     top_results = [
-        (part_id, dist, cat_id) for cat_id, part_id, dist in sorted_results
+        (item['part_id'], item['global_score'], item['cat_id'], item['part_score']) 
+        for item in sorted_results
     ]
 
     return top_results

@@ -5,8 +5,6 @@ from collections import defaultdict
 from tqdm import tqdm
 from config import *
 
-OUTPUT_PATH = "data/dataset/part_id_map.pkl"
-
 part_id_map = defaultdict(list)
 
 dataset = (
@@ -22,7 +20,7 @@ for pid_bytes, key, cls in tqdm(dataset):
 print(f"Totale part_id unici: {len(part_id_map)}")
 
 # Salva su disco
-with open(OUTPUT_PATH, "wb") as f:
+with open(PKL_PATH, "wb") as f:
     pickle.dump(dict(part_id_map), f)
 
-print(f"Salvato in: {OUTPUT_PATH}")
+print(f"Salvato in: {PKL_PATH}")

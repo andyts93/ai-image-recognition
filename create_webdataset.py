@@ -16,7 +16,6 @@ CSV_PATH = "data/metadata.csv"
 OUTPUT_DIR = "data/dataset"
 SHARD_SIZE = 50
 IMAGE_ROOT = "."
-OUTPUT_PATH = "data/dataset/part_id_map.pkl"
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(os.path.join(OUTPUT_DIR, "train"), exist_ok=True)

@@ -17,6 +17,7 @@ IMAGE_OUTPUT_FOLDER = "image_resized/"
 IMAGE_TEST_OUTPUT_FOLDER = "image_test/"
 IMAGE_BASE_URL = "http://91.187.214.100:8380/images/foto/"
 IMAGE_SIZE = (224, 224)
+PKL_PATH = "data/dataset/part_id_map.pkl"
 
 IMG_ROOT = "."
 NUM_CLASSES = 25
