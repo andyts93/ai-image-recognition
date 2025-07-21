@@ -9,6 +9,7 @@ import argparse
 from config import *
 from collections import defaultdict
 import torch.nn.functional as F
+import pickle
 
 from model.embedding_model import EmbeddingNet
 from model.classifier import get_model
@@ -23,6 +24,11 @@ transform = transforms.Compose([
         std=[0.229, 0.224, 0.225]
     )
 ])
+with open("data/dataset/category_centroids.pkl", "rb") as f:
+    category_centroids = pickle.load(f)
+
+# Definisci una soglia di distanza (da trovare sperimentalmente)
+DISTANCE_THRESHOLD = 20.0
 
 def load_models(embedding_path, classifier_path, num_classes):
     emb_model = EmbeddingNet()
@@ -107,7 +113,24 @@ def main(img, embedding_path, classifier_path, num_classes, params):
     embedding = extract_embedding(img_tensor, emb_model)
 
     categories = predict_category(img_tensor, cls_model, k=params["top_k_classifier"])
-    print(categories)
+
+    for predicted_cat_id, confidence in categories:
+        if predicted_cat_id in category_centroids:
+            # Recupera il centroide per la categoria predetta
+            centroid = category_centroids[predicted_cat_id]
+            
+            # Calcola la distanza Euclidea (L2) tra l'embedding e il centroide
+            distance = np.linalg.norm(embedding - centroid)
+            
+            print(f"Categoria predetta: {predicted_cat_id}, Distanza dal centroide: {distance:.4f}")
+            
+            # Se la distanza supera la soglia, è un'anomalia
+            if distance > DISTANCE_THRESHOLD:
+                # Puoi personalizzare l'output per l'utente
+                print(f"Immagine non riconosciuta (troppo diversa dai ricambi noti)")
+        else:
+            # Se non abbiamo un centroide per questa categoria, non possiamo verificare
+            print(f"Attenzione: Centroide non trovato per la categoria {predicted_cat_id}")
 
     dist_by_cat = defaultdict(list)
     all_results = []
