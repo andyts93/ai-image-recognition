@@ -21,7 +21,7 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(os.path.join(OUTPUT_DIR, "train"), exist_ok=True)
 os.makedirs(os.path.join(OUTPUT_DIR, "val"), exist_ok=True)
 
-df = pd.read_csv(CSV_PATH)
+df = pd.read_csv(CSV_PATH, dtype={"image_path": str, "part_id": str, "category_id": int})
 df = df.dropna(subset=["image_path", "category_id", "part_id"])
 df["image_path"] = df["image_path"].apply(lambda p: os.path.join(IMAGE_ROOT, p))
 
