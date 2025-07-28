@@ -10,3 +10,5 @@ data/dataset/*
 !data/dataset/.gitkeep
 image_test
 .env
+.idea
+.vscode

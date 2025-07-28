@@ -32,8 +32,6 @@ CLASS_WEIGHT_DECAY = 0.001092
 
 TRAIN_SHARDS = sorted(glob.glob("data/dataset/train/shard-*.tar"))
 VAL_SHARDS = sorted(glob.glob("data/dataset/val/shard-*.tar"))
-TOTAL_SAMPLES = 25_000
-MAX_BATCH_PER_EPOCH = TOTAL_SAMPLES // BATCH_SIZE
 
 PART_ID_MAP = "data/dataset/part_id_map.pkl"
 
