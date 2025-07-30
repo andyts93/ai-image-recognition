@@ -7,7 +7,7 @@ import os
 from config import *  # Le tue configurazioni
 # Riusiamo il part_loader perché ci dà (immagine, etichetta)
 from dataset.part_loader import get_part_dataloader, get_val_dataloader
-from model.embedding_model import EmbeddingNetArcFace  # Il nuovo modello
+from model.embedding_model import EmbeddingNet  # Il nuovo modello
 # Riusiamo la funzione di valutazione perché funziona con gli embedding
 from train_hard_negatives import evaluate
 
@@ -20,7 +20,7 @@ def train_arcface_model(epochs=30, lr=1e-4, embedding_dim=128, device=DEVICE):
     val_loader = get_val_dataloader(VAL_SHARDS, BATCH_SIZE, NUM_WORKERS)
 
     # Inizializza il nuovo modello
-    model = EmbeddingNetArcFace(embedding_dim=embedding_dim, num_classes=NUM_UNIQUE_PART_IDS).to(device)
+    model = EmbeddingNet(embedding_dim=embedding_dim, num_classes=NUM_UNIQUE_PART_IDS).to(device)
 
     # La loss è una semplice CrossEntropyLoss!
     criterion = nn.CrossEntropyLoss()

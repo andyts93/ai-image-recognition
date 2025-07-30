@@ -25,7 +25,7 @@ import timm
 from .arcface import ArcFace  # Importa il layer che abbiamo appena creato
 
 
-class EmbeddingNetArcFace(nn.Module):
+class EmbeddingNet(nn.Module):
     def __init__(self, embedding_dim, num_classes, pretrained=True):
         super().__init__()
         # Carica il backbone ViT
