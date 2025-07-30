@@ -12,7 +12,7 @@ from model.embedding_model import EmbeddingNet  # Il nuovo modello
 from train_hard_negatives import evaluate
 
 
-def train_arcface_model(epochs=30, lr=1e-4, embedding_dim=128, device=DEVICE):
+def train_arcface_model(epochs=30, lr=1e-5, embedding_dim=128, device=DEVICE):
     # Prepara i dataloader
     # NUM_CLASSES è il numero di part_id unici, non di categorie!
     # Assicurati che il tuo dataloader usi i part_id come etichette
@@ -46,6 +46,7 @@ def train_arcface_model(epochs=30, lr=1e-4, embedding_dim=128, device=DEVICE):
 
             loss = criterion(outputs, pids)
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             optimizer.step()
 
             epoch_loss += loss.item()
