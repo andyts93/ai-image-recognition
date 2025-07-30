@@ -74,9 +74,8 @@ def train_arcface_model(epochs=30, lr=1e-4, embedding_dim=128, device=DEVICE):
     print(f"Miglior Recall@5 di validazione ottenuto: {best_val_recall:.4f}")
     return model
 
+with open("data/dataset/num_unique_part_ids.txt", "r") as f:
+    NUM_UNIQUE_PART_IDS = int(f.read())
 
 if __name__ == "__main__":
-    # IMPORTANTE: Devi conoscere il numero di part_id unici nel tuo dataset
-    # Questo valore è cruciale per la dimensione del layer di classificazione di ArcFace
-    NUM_UNIQUE_PART_IDS = 92526  # Sostituisci con il tuo valore reale
     train_arcface_model(epochs=NUM_EPOCHS)
