@@ -204,4 +204,4 @@ if __name__ == "__main__":
             outputs=all_outputs
         )
     
-    app.launch(share=True)
+    app.launch(share=False)

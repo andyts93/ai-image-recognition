@@ -84,6 +84,8 @@ def query_faiss(embedding, category_id, faiss_k, alpha, beta, gamma):
         part_id = res['part_id']
         agg[part_id].append(dist)
 
+    print(agg)
+
     scored_part_ids = []
     for part_id, dists in agg.items():
         dists = np.array(dists)
@@ -113,24 +115,25 @@ def main(img, embedding_path, classifier_path, num_classes, params):
     embedding = extract_embedding(img_tensor, emb_model)
 
     categories = predict_category(img_tensor, cls_model, k=params["top_k_classifier"])
+    print(f"Categories: {categories}")
 
-    for predicted_cat_id, confidence in categories:
-        if predicted_cat_id in category_centroids:
-            # Recupera il centroide per la categoria predetta
-            centroid = category_centroids[predicted_cat_id]
-            
-            # Calcola la distanza Euclidea (L2) tra l'embedding e il centroide
-            distance = np.linalg.norm(embedding - centroid)
-            
-            print(f"Categoria predetta: {predicted_cat_id}, Distanza dal centroide: {distance:.4f}")
-            
-            # Se la distanza supera la soglia, è un'anomalia
-            if distance > DISTANCE_THRESHOLD:
-                # Puoi personalizzare l'output per l'utente
-                print(f"Immagine non riconosciuta (troppo diversa dai ricambi noti)")
-        else:
-            # Se non abbiamo un centroide per questa categoria, non possiamo verificare
-            print(f"Attenzione: Centroide non trovato per la categoria {predicted_cat_id}")
+    # for predicted_cat_id, confidence in categories:
+    #     if predicted_cat_id in category_centroids:
+    #         # Recupera il centroide per la categoria predetta
+    #         centroid = category_centroids[predicted_cat_id]
+    #
+    #         # Calcola la distanza Euclidea (L2) tra l'embedding e il centroide
+    #         distance = np.linalg.norm(embedding - centroid)
+    #
+    #         print(f"Categoria predetta: {predicted_cat_id}, Distanza dal centroide: {distance:.4f}")
+    #
+    #         # Se la distanza supera la soglia, è un'anomalia
+    #         if distance > DISTANCE_THRESHOLD:
+    #             # Puoi personalizzare l'output per l'utente
+    #             print(f"Immagine non riconosciuta (troppo diversa dai ricambi noti)")
+    #     else:
+    #         # Se non abbiamo un centroide per questa categoria, non possiamo verificare
+    #         print(f"Attenzione: Centroide non trovato per la categoria {predicted_cat_id}")
 
     dist_by_cat = defaultdict(list)
     all_results = []
@@ -183,6 +186,8 @@ def main(img, embedding_path, classifier_path, num_classes, params):
         (item['part_id'], item['global_score'], item['cat_id'], item['part_score']) 
         for item in sorted_results
     ]
+
+    print(top_results)
 
     return top_results
 

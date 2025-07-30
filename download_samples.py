@@ -30,8 +30,7 @@ if __name__ == "__main__":
             cursor.execute("""
                 SELECT id 
                 FROM corsmagquattro.ricambi 
-                WHERE visible = 1 AND id > 0 
-                LIMIT 25
+                WHERE id IN (2275,1771,364,2168,2413,868,86,1935,2187,1992,1777,57,3127,819,97,68,2932,5338,2136,556,2837,1443,2383,2209,825)
             """)
             ids = cursor.fetchall()
 
